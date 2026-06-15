@@ -91,6 +91,9 @@ fun GameScreen(
                 InfoCard(title = "Duracion") {
                     Text(text = "${state.durationSeconds}s")
                 }
+                InfoCard(title = "Ataque") {
+                    Text(text = state.lastBattleEvent)
+                }
                 InfoCard(title = "Referencia 37") {
                     Text(text = "Canal 37 activo")
                 }

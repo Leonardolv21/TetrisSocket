@@ -70,9 +70,5 @@ fun HomeScreen(
                 Text("Ocultar")
             }
         }
-        Text(
-            text = "Configura tu IP del servidor en ServerConfig antes de probar en celular o emulador.",
-            style = MaterialTheme.typography.bodySmall,
-        )
     }
 }

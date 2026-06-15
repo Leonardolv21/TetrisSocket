@@ -10,6 +10,7 @@ interface SocketRepository {
     val connectionStatus: StateFlow<ConnectionStatus>
     val roomSession: StateFlow<RoomSession>
     val events: SharedFlow<SocketEvent>
+    val pendingGarbageLines: StateFlow<Int>
 
     fun connect()
     fun disconnect()
@@ -17,5 +18,6 @@ interface SocketRepository {
     fun joinRoom(roomCode: String)
     fun sendAttack(roomCode: String, garbageLines: Int)
     fun sendGameOver(roomCode: String)
+    fun consumePendingGarbageLines(): Int
     fun resetSession()
 }

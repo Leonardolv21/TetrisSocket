@@ -6,6 +6,7 @@ import com.example.tetrissocket.domain.model.LocalGameState
 import kotlin.random.Random
 
 data class EngineStepResult(
+    val clearedLines: Int = 0,
     val sentGarbage: Int = 0,
     val didLose: Boolean = false,
 )
@@ -241,6 +242,7 @@ class TetrisEngine(
         activePiece = null
         spawnNextPiece()
         return EngineStepResult(
+            clearedLines = cleared,
             sentGarbage = sentGarbage,
             didLose = gameOver,
         )

@@ -12,6 +12,6 @@ fun blockColor(kind: BlockKind): Color {
         BlockKind.Z -> Color(0xFFE57373)
         BlockKind.J -> Color(0xFF64B5F6)
         BlockKind.L -> Color(0xFFFFB74D)
-        BlockKind.GARBAGE -> Color(0xFF78909C)
+        BlockKind.GARBAGE -> Color(0xFF050505)
     }
 }

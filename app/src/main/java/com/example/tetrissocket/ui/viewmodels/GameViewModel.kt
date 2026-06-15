@@ -1,5 +1,6 @@
 package com.example.tetrissocket.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,10 @@ class GameViewModel @Inject constructor(
     private val gameRepository: GameRepository,
     private val socketRepository: SocketRepository,
 ) : ViewModel() {
+    companion object {
+        private const val TAG = "TetrisSocket"
+    }
+
     private val roomCode: String = savedStateHandle["roomCode"] ?: ""
 
     private val _uiState = MutableStateFlow(GameUiState(roomCode = roomCode))
@@ -94,10 +99,24 @@ class GameViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            socketRepository.pendingGarbageLines.collectLatest { pendingLines ->
+                if (pendingLines <= 0) return@collectLatest
+                val linesToApply = socketRepository.consumePendingGarbageLines()
+                if (linesToApply > 0) {
+                    Log.d(TAG, "Aplicando basura recibida lines=$linesToApply roomCode=$roomCode")
+                    _uiState.value = _uiState.value.copy(
+                        lastBattleEvent = "Recibiste $linesToApply linea(s) basura"
+                    )
+                    processEngineStep(gameRepository.applyGarbage(linesToApply))
+                }
+            }
+        }
+
+        viewModelScope.launch {
             socketRepository.events.collectLatest { event ->
                 when (event) {
                     is SocketEvent.AttackReceived -> {
-                        processEngineStep(gameRepository.applyGarbage(event.garbageLines))
+                        Log.d(TAG, "Evento AttackReceived garbageLines=${event.garbageLines} roomCode=$roomCode")
                     }
                     SocketEvent.Victory -> {
                         finishMatch(
@@ -128,7 +147,7 @@ class GameViewModel @Inject constructor(
 
         dropJob = viewModelScope.launch {
             while (!matchFinished) {
-                delay(650)
+                delay(3000)
                 processEngineStep(gameRepository.tick())
             }
         }
@@ -143,6 +162,18 @@ class GameViewModel @Inject constructor(
     }
 
     private fun processEngineStep(stepResult: com.example.tetrissocket.domain.game.EngineStepResult) {
+        if (stepResult.clearedLines > 0) {
+            val message = if (stepResult.sentGarbage > 0) {
+                "Limpiaste ${stepResult.clearedLines} linea(s) y enviaste ${stepResult.sentGarbage} basura"
+            } else {
+                "Limpiaste ${stepResult.clearedLines} linea(s) sin ataque"
+            }
+            Log.d(
+                TAG,
+                "StepResult clearedLines=${stepResult.clearedLines} sentGarbage=${stepResult.sentGarbage} didLose=${stepResult.didLose} roomCode=$roomCode"
+            )
+            _uiState.value = _uiState.value.copy(lastBattleEvent = message)
+        }
         if (stepResult.sentGarbage > 0) {
             socketRepository.sendAttack(roomCode = roomCode, garbageLines = stepResult.sentGarbage)
         }

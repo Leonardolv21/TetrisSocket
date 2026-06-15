@@ -9,6 +9,7 @@ data class GameUiState(
     val localGameState: LocalGameState = LocalGameState.empty(),
     val opponentStatusLabel: String = "Esperando",
     val durationSeconds: Long = 0,
+    val lastBattleEvent: String = "Sin ataques",
     val lastError: String? = null,
 )
 
